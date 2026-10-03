@@ -1,8 +1,11 @@
 import { PrismaClient } from "../../../../src/generated/prisma/client";
-import { seedValladolidSources } from "./sources";
+import { ordenanzas2026Url, seedValladolidSources } from "./sources";
 import { seedValladolidIbi } from "./ibi";
 import { seedValladolidIvtm } from "./ivtm";
 import { seedValladolidWaste } from "./waste";
+import { seedValladolidHistoric } from "./historic";
+import { seedValladolidDisability } from "./disability";
+import { seedValladolidOra } from "./ora";
 
 type FieldMap = Map<string, { id: bigint; clave: string }>;
 
@@ -53,6 +56,7 @@ export async function seedValladolid(
         where: {
             url: {
                 in: [
+                    ordenanzas2026Url,
                     "https://www.valladolid.es/es/temas/hacemos/beneficios-fiscales-ayuntamiento-valladolid/familias-personas-vulnerables/impuesto-bienes-inmuebles-ibi/familias-numerosas",
                     "https://www.valladolid.es/es/temas/hacemos/beneficios-fiscales-ayuntamiento-valladolid/movilidad-medio-ambiente/impuesto-vehiculos-traccion-mecanica-ivtm/movilidad-sostenible",
                     "https://www.valladolid.es/es/temas/hacemos/beneficios-fiscales-ayuntamiento-valladolid/familias-personas-vulnerables/tasa-recogida-residuos/viviendas",
@@ -68,21 +72,41 @@ export async function seedValladolid(
         prisma,
         municipio.id,
         fields,
-        sources.ibiFamiliaNumerosa.id,
+        sources.ordenanzas2026.id,
     );
 
     await seedValladolidIvtm(
         prisma,
         municipio.id,
         fields,
-        sources.ivtmMovilidad.id,
+        sources.ordenanzas2026.id,
     );
 
     await seedValladolidWaste(
         prisma,
         municipio.id,
         fields,
-        sources.residuosFamiliaNumerosa.id,
-        sources.residuosCompostaje.id,
+        sources.ordenanzas2026.id,
+        sources.ordenanzas2026.id,
     );
+
+    await seedValladolidHistoric(prisma, municipio.id, fields, sources.ordenanzas2026.id);
+    await seedValladolidDisability(prisma, municipio.id, fields, sources.ordenanzas2026.id);
+    await seedValladolidOra(prisma, municipio.id, fields, sources.ordenanzas2026.id);
+
+    // Conservamos las páginas explicativas como fuentes secundarias.
+    for (const [tributo, slug, fuenteId] of [
+        ["IBI", "familia-numerosa", sources.ibiFamiliaNumerosa.id],
+        ["IVTM", "movilidad-sostenible", sources.ivtmMovilidad.id],
+        ["TASA_RESIDUOS", "familia-numerosa", sources.residuosFamiliaNumerosa.id],
+        ["TASA_RESIDUOS", "renta-iprem", sources.residuosFamiliaNumerosa.id],
+        ["TASA_RESIDUOS", "compostaje-domiciliario", sources.residuosCompostaje.id],
+    ] as const) {
+        await prisma.beneficio.update({
+            where: { municipioId_tributo_slug_ejercicioDesde: {
+                municipioId: municipio.id, tributo, slug, ejercicioDesde: 2026,
+            } },
+            data: { fuentes: { create: { fuenteId, esPrincipal: false } } },
+        });
+    }
 }

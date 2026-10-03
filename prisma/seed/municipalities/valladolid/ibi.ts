@@ -14,7 +14,7 @@ export async function seedValladolidIbi(
     fields: FieldMap,
     sourceId: bigint,
 ) {
-    const familiaNumerosa = fields.get("familia_numerosa");
+    const familiaNumerosa = fields.get("familia_numerosa_devengo_2026");
     const categoria = fields.get("categoria_familia_numerosa");
     const viviendaHabitual = fields.get("vivienda_habitual");
 
@@ -51,7 +51,8 @@ export async function seedValladolidIbi(
                 create: {
                     requiereSolicitud: true,
                     plazoDescripcion:
-                        "Antes de la finalización del periodo voluntario de pago.",
+                        "Antes de finalizar el período voluntario del IBI: 5 de junio de 2026.",
+                    plazoHasta: new Date("2026-06-05T00:00:00.000Z"),
                 },
             },
         },
@@ -69,7 +70,7 @@ export async function seedValladolidIbi(
                         operador: OperadorRegla.EQ,
                         valor: true,
                         descripcionUsuario:
-                            "Debes tener la condición de familia numerosa.",
+                            "El título de familia numerosa debía ser válido en el devengo del 1 de enero de 2026.",
                         orden: 10,
                     },
                     {

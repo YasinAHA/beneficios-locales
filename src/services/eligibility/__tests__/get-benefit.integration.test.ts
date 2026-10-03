@@ -27,7 +27,7 @@ describe("getEvaluatableBenefit integration", () => {
         }
 
         const answers = {
-            familia_numerosa: true,
+            familia_numerosa_devengo_2026: true,
             vivienda_habitual: true,
             categoria_familia_numerosa: "especial",
         };
