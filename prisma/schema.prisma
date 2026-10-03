@@ -6,3 +6,276 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum EstadoRevision {
+  VIGENTE
+  PENDIENTE_REVISION
+  DESACTUALIZADO
+  RETIRADO
+}
+
+enum TipoBonificacion {
+  PORCENTAJE
+  IMPORTE
+  EXENCION
+  REDUCCION
+  OTRO
+}
+
+enum OperadorLogico {
+  AND
+  OR
+}
+
+enum OperadorRegla {
+  EQ
+  NEQ
+  GT
+  GTE
+  LT
+  LTE
+  IN
+  NOT_IN
+}
+
+enum TipoCampo {
+  BOOLEAN
+  NUMBER
+  STRING
+}
+
+enum TipoRespuesta {
+  BOOLEAN
+  SELECT
+  NUMBER
+  TEXT
+}
+
+enum OrigenSolicitudMunicipio {
+  PORTADA
+  TEST
+  FICHA_SEO
+}
+
+model Municipio {
+  id        BigInt   @id @default(autoincrement())
+  codigoIne String   @unique @map("codigo_ine") @db.VarChar(10)
+  nombre    String   @db.VarChar(150)
+  provincia String   @db.VarChar(150)
+  comunidad String   @db.VarChar(150)
+  slug      String   @unique @db.VarChar(160)
+  activo    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  beneficios Beneficio[]
+
+  @@map("municipios")
+}
+
+model Beneficio {
+  id BigInt @id @default(autoincrement())
+
+  municipioId BigInt    @map("municipio_id")
+  municipio   Municipio @relation(fields: [municipioId], references: [id], onDelete: Cascade)
+
+  tributo String @db.VarChar(30)
+  slug    String @db.VarChar(180)
+
+  titulo           String  @db.VarChar(250)
+  descripcionCorta String? @map("descripcion_corta")
+  descripcion      String?
+
+  ejercicioDesde Int  @map("ejercicio_desde") @db.SmallInt
+  ejercicioHasta Int? @map("ejercicio_hasta") @db.SmallInt
+
+  tipo   TipoBonificacion
+  valor  Decimal?         @db.Decimal(12, 2)
+  unidad String?          @db.VarChar(30)
+
+  estado              EstadoRevision @default(PENDIENTE_REVISION)
+  fechaUltimaRevision DateTime?      @map("fecha_ultima_revision") @db.Date
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  gruposReglas GrupoRegla[]
+  tramos       TramoBeneficio[]
+  fuentes      BeneficioFuente[]
+  tramite      Tramite?
+
+  @@unique([municipioId, tributo, slug, ejercicioDesde])
+  @@index([municipioId])
+  @@index([municipioId, estado])
+  @@index([tributo])
+  @@index([ejercicioDesde, ejercicioHasta])
+  @@map("beneficios")
+}
+
+model CampoEvaluable {
+  id          BigInt    @id @default(autoincrement())
+  clave       String    @unique @db.VarChar(100)
+  tipo        TipoCampo
+  descripcion String?
+
+  reglas         Regla[]
+  preguntaCampos PreguntaCampo[]
+
+  @@map("campos_evaluables")
+}
+
+model GrupoRegla {
+  id BigInt @id @default(autoincrement())
+
+  beneficioId BigInt?    @map("beneficio_id")
+  beneficio   Beneficio? @relation(fields: [beneficioId], references: [id], onDelete: Cascade)
+
+  tramoId BigInt?         @map("tramo_id")
+  tramo   TramoBeneficio? @relation(fields: [tramoId], references: [id], onDelete: Cascade)
+
+  operador OperadorLogico
+  orden    Int            @default(0)
+
+  reglas Regla[]
+
+  @@index([beneficioId])
+  @@index([tramoId])
+  @@map("grupos_reglas")
+}
+
+model Regla {
+  id BigInt @id @default(autoincrement())
+
+  grupoId BigInt     @map("grupo_id")
+  grupo   GrupoRegla @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+
+  campoId BigInt         @map("campo_id")
+  campo   CampoEvaluable @relation(fields: [campoId], references: [id])
+
+  operador OperadorRegla
+  valor    Json
+
+  descripcionUsuario String? @map("descripcion_usuario")
+  orden              Int     @default(0)
+
+  @@index([grupoId])
+  @@index([campoId])
+  @@map("reglas")
+}
+
+model TramoBeneficio {
+  id BigInt @id @default(autoincrement())
+
+  beneficioId BigInt    @map("beneficio_id")
+  beneficio   Beneficio @relation(fields: [beneficioId], references: [id], onDelete: Cascade)
+
+  nombre String @db.VarChar(150)
+
+  tipo   TipoBonificacion
+  valor  Decimal?         @db.Decimal(12, 2)
+  unidad String?          @db.VarChar(30)
+
+  orden Int @default(0)
+
+  gruposReglas GrupoRegla[]
+
+  @@index([beneficioId])
+  @@map("tramos_beneficio")
+}
+
+model Fuente {
+  id BigInt @id @default(autoincrement())
+
+  tipo   String @db.VarChar(50)
+  titulo String @db.VarChar(300)
+  url    String
+
+  ejercicio     Int?     @db.SmallInt
+  fechaConsulta DateTime @map("fecha_consulta") @db.Date
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  beneficios BeneficioFuente[]
+
+  @@map("fuentes")
+}
+
+model BeneficioFuente {
+  beneficioId BigInt    @map("beneficio_id")
+  beneficio   Beneficio @relation(fields: [beneficioId], references: [id], onDelete: Cascade)
+
+  fuenteId BigInt @map("fuente_id")
+  fuente   Fuente @relation(fields: [fuenteId], references: [id], onDelete: Cascade)
+
+  referencia  String? @db.VarChar(250)
+  articulo    String? @db.VarChar(100)
+  pagina      String? @db.VarChar(50)
+  esPrincipal Boolean @default(false) @map("es_principal")
+
+  @@id([beneficioId, fuenteId])
+  @@index([fuenteId])
+  @@map("beneficios_fuentes")
+}
+
+model Tramite {
+  id BigInt @id @default(autoincrement())
+
+  beneficioId BigInt    @unique @map("beneficio_id")
+  beneficio   Beneficio @relation(fields: [beneficioId], references: [id], onDelete: Cascade)
+
+  requiereSolicitud Boolean @default(true) @map("requiere_solicitud")
+
+  plazoDescripcion String?   @map("plazo_descripcion")
+  plazoDesde       DateTime? @map("plazo_desde") @db.Date
+  plazoHasta       DateTime? @map("plazo_hasta") @db.Date
+
+  documentacion Json?
+  procedimiento String?
+  urlTramite    String? @map("url_tramite")
+  observaciones String?
+
+  @@map("tramites")
+}
+
+model PreguntaTest {
+  id BigInt @id @default(autoincrement())
+
+  clave    String        @unique @db.VarChar(100)
+  pregunta String
+  tipo     TipoRespuesta
+  opciones Json?
+  ayuda    String?
+
+  orden  Int     @default(0)
+  activa Boolean @default(true)
+
+  campos PreguntaCampo[]
+
+  @@map("preguntas_test")
+}
+
+model PreguntaCampo {
+  preguntaId BigInt       @map("pregunta_id")
+  pregunta   PreguntaTest @relation(fields: [preguntaId], references: [id], onDelete: Cascade)
+
+  campoId BigInt         @map("campo_id")
+  campo   CampoEvaluable @relation(fields: [campoId], references: [id], onDelete: Cascade)
+
+  @@id([preguntaId, campoId])
+  @@index([campoId])
+  @@map("preguntas_campos")
+}
+
+model SolicitudMunicipio {
+  id BigInt @id @default(autoincrement())
+
+  municipioSolicitado  String                    @map("municipio_solicitado") @db.VarChar(150)
+  municipioNormalizado String                    @map("municipio_normalizado") @db.VarChar(150)
+  provincia            String?                   @db.VarChar(150)
+  origen               OrigenSolicitudMunicipio?
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([municipioNormalizado])
+  @@index([createdAt])
+  @@map("solicitudes_municipio")
+}
