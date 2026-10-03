@@ -5,6 +5,7 @@ import { evaluateTranches } from "@/domain/eligibility/evaluate-tranches";
 import { prisma } from "@/lib/prisma";
 
 import { getEvaluatableBenefit } from "../get-benefit";
+import { evaluateBenefitEligibility } from "../evaluate-benefit-eligibility";
 
 afterAll(async () => {
     await prisma.$disconnect();
@@ -102,5 +103,40 @@ describe("getEvaluatableBenefit integration", () => {
         });
 
         expect(benefit).toBeNull();
+    });
+
+    it("preserves multiple matching IVTM tranches from the seeded data", async () => {
+        const benefit = await getEvaluatableBenefit({
+            municipalitySlug: "valladolid",
+            tax: "IVTM",
+            benefitSlug: "movilidad-sostenible",
+            exercise: 2026,
+        });
+
+        expect(benefit).not.toBeNull();
+
+        if (!benefit) {
+            throw new Error("Expected seeded Valladolid IVTM benefit");
+        }
+
+        const result = evaluateBenefitEligibility(benefit, {
+            vehiculo_tipo_motor: "combustion",
+            vehiculo_combustible: "glp",
+            vehiculo_emisiones_co2: 100,
+        });
+
+        expect(result.status).toBe("MATCH");
+        expect(result.missingFields).toEqual([]);
+        expect(result.unknownTrancheIds).toEqual([]);
+        expect(result.matchedTrancheIds).toHaveLength(2);
+
+        const matchedTrancheNames = result.matchedTrancheIds.map(
+            (trancheId) => benefit.trancheDetails[trancheId]?.name,
+        );
+
+        expect(matchedTrancheNames).toEqual([
+            "Vehículo que utiliza GLP",
+            "Vehículo no diésel con emisiones de hasta 120 g CO₂/km",
+        ]);
     });
 });
