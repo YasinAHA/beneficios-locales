@@ -49,7 +49,7 @@ export async function seedValladolidIvtm(
                 create: {
                     requiereSolicitud: true,
                     plazoDescripcion:
-                        "Antes de la finalización del periodo voluntario de pago.",
+                        "Padrón ordinario: hasta el 6 de abril de 2026. Para nuevas matriculaciones existe una regla específica que permite solicitar estas bonificaciones durante el ejercicio.",
                 },
             },
         },
