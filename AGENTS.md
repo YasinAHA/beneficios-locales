@@ -67,15 +67,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Validation
 
-Before reporting an implementation as complete, run the checks required by the active task.
+Before reporting an implementation as complete, run:
 
-For the current project baseline, this normally includes:
+`pnpm validate`
+
+This is the canonical local validation command and currently includes:
 
 - `pnpm exec vitest run`
 - `pnpm exec tsc --noEmit`
 - `pnpm lint`
 - `pnpm build`
 - `git diff --check`
+
+Do not duplicate these checks manually unless the active task requires additional validation.
 
 Report failures rather than hiding or bypassing them.
 
