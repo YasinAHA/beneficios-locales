@@ -33,6 +33,11 @@ function mapGroups(
 
 export type MappedEvaluatableBenefit = {
     id: string;
+    result: {
+        type: string;
+        value: string | null;
+        unit: string | null;
+    };
     eligibility: EvaluatableBenefit;
     tranches: EvaluatableTranche[];
     trancheDetails: Record<
@@ -51,6 +56,11 @@ export function mapBenefitToEvaluatable(
 ): MappedEvaluatableBenefit {
     return {
         id: benefit.id.toString(),
+        result: {
+            type: benefit.tipo,
+            value: benefit.valor?.toString() ?? null,
+            unit: benefit.unidad,
+        },
 
         eligibility: {
             groups: mapGroups(benefit.gruposReglas),

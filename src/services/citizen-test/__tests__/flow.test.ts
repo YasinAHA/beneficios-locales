@@ -19,7 +19,7 @@ const result = (value: string | null = "40", type = "PORCENTAJE", unit: string |
     ({ name: "Pathway", type, value, unit });
 const candidate = (key: string, groups: RuleGroup[] = []): CitizenTestCandidate => ({
     key, municipalitySlug: "example", tax: "example", benefitSlug: key, exercise: 2026,
-    benefit: { id: key, eligibility: { groups }, tranches: [], trancheDetails: {} },
+    benefit: { id: key, result: result(), eligibility: { groups }, tranches: [], trancheDetails: {} },
 });
 const question = (key: string, responseType: CitizenTestQuestion["responseType"] = "BOOLEAN", order = 0): CitizenTestQuestion => ({
     key, text: `Question ${key}`, help: null, responseType,

@@ -8,6 +8,7 @@ function createBenefit(
 ): MappedEvaluatableBenefit {
     return {
         id: "benefit-1",
+        result: { type: "EXENCION", value: null, unit: "cuota" },
         eligibility: {
             groups: [],
         },
