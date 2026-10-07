@@ -11,6 +11,7 @@ import { evaluateCitizenTest } from "../flow";
 
 const benefits = () => Array.from({ length: 8 }, (_, i) => ({
     id: BigInt(i + 1), tributo: "TEST", slug: `candidate-${i}`,
+    tipo: "EXENCION", valor: null, unidad: "cuota",
     gruposReglas: [{ operador: "AND", reglas: [{
         campo: { clave: "shared", tipo: "BOOLEAN" }, operador: "EQ", valor: true,
     }] }],
