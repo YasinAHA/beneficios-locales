@@ -48,6 +48,7 @@ export async function seedValladolidIvtm(
             tramite: {
                 create: {
                     requiereSolicitud: true,
+                    plazoHasta: new Date("2026-04-06T00:00:00.000Z"),
                     plazoDescripcion:
                         "Padrón ordinario: hasta el 6 de abril de 2026. Para nuevas matriculaciones existe una regla específica que permite solicitar estas bonificaciones durante el ejercicio.",
                 },
