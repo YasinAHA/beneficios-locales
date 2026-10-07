@@ -157,6 +157,7 @@ describe("Valladolid V0 fiscal dataset 2026", () => {
             const deadline = benefit.tributo === "IBI" ? "2026-06-05"
                 : benefit.tributo === "IVTM" ? "2026-04-06" : "2026-11-05";
             if (benefit.slug === "movilidad-sostenible") {
+                expect(benefit.tramite?.plazoHasta?.toISOString().slice(0, 10)).toBe(deadline);
                 expect(benefit.tramite?.plazoDescripcion).toContain("6 de abril de 2026");
                 expect(benefit.tramite?.plazoDescripcion).toContain("nuevas matriculaciones");
             } else if (benefit.tributo === "ORA") {

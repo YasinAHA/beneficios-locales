@@ -16,7 +16,7 @@ describe("benefit editorial lookup", () => {
 
     it.each([
         { municipalitySlug: "madrid" },
-        { tax: "TASA_RESIDUOS" },
+        { tax: "ORA" },
         { tax: "ibi" },
         { benefitSlug: "movilidad-sostenible" },
         { exercise: 2027 },
