@@ -7,7 +7,7 @@ export type BenefitContentKey = {
 
 // References are resolved from structured data by the application layer.
 export type EditorialText = readonly (string | {
-    fact: "tranchePercentages" | "applicationDeadline";
+    fact: "tranchePercentages" | "applicationDeadline" | "benefitResult";
 })[];
 
 export type BenefitEditorialContent = {

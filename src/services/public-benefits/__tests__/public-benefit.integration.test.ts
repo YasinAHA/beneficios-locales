@@ -90,10 +90,11 @@ describe("public benefit composition", () => {
         expect(() => composePublicBenefit(data, 2027)).toThrow("not valid");
     });
 
-    it("retains structured data when another seeded benefit has no editorial content", async () => {
-        const benefit = await getPublicBenefit({ ...key, tax: "TASA_RESIDUOS" });
+    it("retains structured data when a benefit has no editorial content", async () => {
+        const { data } = (await getPilot()).structured;
+        const benefit = composePublicBenefit({ ...data, slug: "without-editorial-content" }, 2026);
         expect(benefit).toMatchObject({ editorialStatus: "missing", editorial: null });
-        expect(benefit?.structured.data.tributo).toBe("TASA_RESIDUOS");
+        expect(benefit.structured.data).toEqual({ ...data, slug: "without-editorial-content" });
     });
 
     it.each([{ exercise: 2025 }, { exercise: 2027 }, { benefitSlug: "missing" }])(

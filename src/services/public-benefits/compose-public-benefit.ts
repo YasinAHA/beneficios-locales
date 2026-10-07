@@ -19,6 +19,26 @@ export function composePublicBenefit(benefit: BenefitWithPublicData, exercise: n
         if (typeof part === "string") return part;
         const fact = part.fact;
         switch (fact) {
+            case "benefitResult": {
+                const type = benefit.tipo;
+                switch (type) {
+                    case "EXENCION":
+                        return "exención";
+                    case "PORCENTAJE":
+                        if (benefit.valor === null) {
+                            throw new Error("Editorial content requires a structured benefit percentage");
+                        }
+                        return `bonificación del ${benefit.valor.toString()} %`;
+                    case "IMPORTE":
+                    case "REDUCCION":
+                    case "OTRO":
+                        throw new Error(`Unsupported structured benefit result type: ${type}`);
+                    default: {
+                        const unsupportedType: never = type;
+                        throw new Error(`Unsupported structured benefit result type: ${unsupportedType}`);
+                    }
+                }
+            }
             case "applicationDeadline": {
                 const deadline = benefit.tramite?.plazoHasta;
                 if (!deadline) throw new Error("Editorial content requires a structured application deadline");
