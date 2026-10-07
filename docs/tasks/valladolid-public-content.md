@@ -142,6 +142,13 @@ Public path:
 
 `/valladolid/ivtm/bonificaciones`
 
+Structured benefit slug / editorial registry key:
+
+`movilidad-sostenible`
+
+The public path is future routing/SEO metadata. It is not the structured benefit
+slug and must not be used as the current `getPublicBenefit` lookup key.
+
 ### Citizen-facing result
 
 The structured Valladolid data contains the applicable mobility tranches.
@@ -332,6 +339,13 @@ Do not infer it.
 Public path:
 
 `/valladolid/tasa-residuos/compostaje`
+
+Structured benefit slug / editorial registry key:
+
+`compostaje-domiciliario`
+
+The public path is future routing/SEO metadata. It is not the structured benefit
+slug and must not be used as the current `getPublicBenefit` lookup key.
 
 ### Citizen-facing result
 
@@ -557,6 +571,13 @@ Public path:
 
 `/valladolid/ivtm/vehiculo-historico`
 
+Structured benefit slug / editorial registry key:
+
+`historico-epoca`
+
+The public path is future routing/SEO metadata. It is not the structured benefit
+slug and must not be used as the current `getPublicBenefit` lookup key.
+
 ### Citizen-facing result
 
 This is a 100% IVTM bonus.
@@ -658,6 +679,14 @@ current Valladolid V0 dataset.
 
 # Registry
 
+Public paths documented in this task are future citizen-facing routing/SEO
+paths. They are not necessarily identical to the structured `Beneficio.slug`.
+
+For this feature, editorial registry keys must use the exact existing structured
+benefit slugs from Prisma/seed data.
+
+Do not implement public-path aliases or routing in this feature.
+
 Register the seven new records using the existing deterministic registry.
 
 Use:
@@ -689,6 +718,18 @@ If a new generic structured-fact reference is required to represent one of the
 seven records faithfully, extend the resolver minimally and exhaustively.
 
 Do not add benefit-specific rendering branches.
+
+## Known structured-data audit note
+
+For IVTM sustainable mobility, the reviewed ordinary 2026 deadline is
+6 April 2026, but the current structured seed may expose that date only through
+`Tramite.plazoDescripcion` and not through `Tramite.plazoHasta`.
+
+Do not hardcode the date into editorial content and do not parse
+`plazoDescripcion` to manufacture a structured date.
+
+Treat this as a structured-data discrepancy and report it before implementing
+deadline rendering for this benefit.
 
 # Tests
 
